@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Меню</h1>
+    {% if current_user.is_authenticated %}
+        <a href="dishs" class="btn btn-secondary" align="left" >Добавить блюдо</a>
+        <input type="submit" value="Рассчитать калории" id="submit" disabled="true" onclick="count(this, {{current_user.age}}, {{current_user.height}}, {{current_user.weight}});" align="right">
+    {% endif %}
+    {% for item in dishs %}
+        <div class="col-md-9 offset-md-0 border rounded" align="left">
+            <h2>
+              <input class="checkbox" type="checkbox"  id={{ item.title }} name={{ item.title }} data-cars={{ item.carbohydrates }} data-pos={{ item.proteins }} data-fas={{ item.fats }} data-cal={{ item.calories }} onclick="check(this);">
+              <label for={{ item.title }}>{{ item.title }}</label>
+            </h2>
+            <div>
+                {{ item.content }}
+            </div>
+            <div>
+                Повар - {{ item.user.name }}, Дата написания - {{ item.created_date }}
+            </div>
+            {% if current_user.is_authenticated and current_user == item.user %}
+                <div>
+                    <a href="/dishs/{{ item.id }}" class="btn btn-warning">Изменить</a>
+                    <a href="/dishs_delete/{{ item.id }}" class="btn btn-danger">Удалить</a>
+                </div>
+            {% endif %}
+        </div>
+{% endfor %}
+<script type='text/javascript'>
+function check(self)
+{
+	var submit = document.getElementById('submit');
+	var checkboxes = document.getElementsByClassName('checkbox');
+	var checked = false;
+	var checkbox;
+	for (index = 0; index < checkboxes.length; ++index) {
+        checkbox = checkboxes[index];
+        if (checkbox.checked){
+            checked = true;
+            break;
+        }
+    }
+    if (!checked){
+        submit.setAttribute("disabled", !checked);
+    }
+    else{
+        submit.removeAttribute("disabled");
+    }
+}
+
+function count(self, age, height, weight)
+{
+	var checkboxes = document.getElementsByClassName('checkbox');
+	var checkbox;
+	let cals = Number("0");
+	let fas = Number("0");
+	let pos = Number("0");
+	let cars = Number("0");
+	for (index = 0; index < checkboxes.length; ++index) {
+        checkbox = checkboxes[index];
+        if (checkbox.checked){
+            cals = Number(cals) + Number(checkbox.dataset.cal);
+            fas = Number(fas) + Number(checkbox.dataset.fas);
+            pos = Number(pos) + Number(checkbox.dataset.pos);
+            cars = Number(pos) + Number(checkbox.dataset.cars);
+        }
+    }
+    if (((Number(weight) * 10 + Number(height) * 6.25 - Number(age) * 5) * 1.2 - 30) > cals){
+        alert("Сумма калорий выбранных блюд: " + cals + "\n" + "Сумма белков выбранных блюд: " + cars + "\n" + "Сумма жиров выбранных блюд: " + fas + "\n" + "Сумма углеводов выбранных блюд: " + pos + "\n" + "НЕДОБОР!!!");
+   }
+   if (((Number(weight) * 10 + Number(height) * 6.25 - Number(age) * 5) * 1.2 + 30) < cals){
+        alert("Сумма калорий выбранных блюд: " + cals + "\n" + "Сумма белков выбранных блюд: " + cars + "\n" + "Сумма жиров выбранных блюд: " + fas + "\n" + "Сумма углеводов выбранных блюд: " + pos + "\n" + "ПЕРЕБОР!!!");
+   }
+   if ((((Number(weight) * 10 + Number(height) * 6.25 - Number(age) * 5) * 1.2 + 30) < cals) && (((Number(weight) * 10 + Number(height) * 6.25 - Number(age) * 5) * 1.2 - 30) > cals)){
+        alert("Сумма калорий выбранных блюд: " + cals + "\n" + "Сумма белков выбранных блюд: " + cars + "\n" + "Сумма жиров выбранных блюд: " + fas + "\n" + "Сумма углеводов выбранных блюд: " + pos + "\n" + "ИДЕАЛЬНО!!!");
+   }
+}
+
+</script>
+{% endblock %}
+
